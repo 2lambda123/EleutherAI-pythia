@@ -104,7 +104,9 @@ class LocalJsonlLoader(JsonlLoader):
     def __iter__(self):
         current_batch = []
 
-        iterator = self.loader.iter(type=dict, skip_invalid=True, skip_empty=True)
+        iterator = self.loader.iter(type=dict,
+                                    skip_invalid=True,
+                                    skip_empty=True)
         for idx, doc in enumerate(iterator):
             if doc["text"] == "":
                 continue
@@ -113,8 +115,8 @@ class LocalJsonlLoader(JsonlLoader):
 
             current_batch.append(doc)
             if len(current_batch) >= self.batch_size:
-                batch = current_batch[: self.batch_size]
-                current_batch = current_batch[self.batch_size :]
+                batch = current_batch[:self.batch_size]
+                current_batch = current_batch[self.batch_size:]
                 yield batch
 
     def save(self, documents):

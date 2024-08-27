@@ -44,7 +44,8 @@ def init_distributed(rank: int, world_size: int):
 # Document parsing functions
 
 
-def get_raw_text_and_meta(documents: Iterable[dict[str, Any]]) -> Iterable[Tuple[str]]:
+def get_raw_text_and_meta(
+        documents: Iterable[dict[str, Any]]) -> Iterable[Tuple[str]]:
     """Yields an iterator that extracts text from jsonl document
 
     :param documents: Iterable[dict[str:
@@ -55,9 +56,8 @@ def get_raw_text_and_meta(documents: Iterable[dict[str, Any]]) -> Iterable[Tuple
         yield document["text"]
 
 
-def split_sentences(
-    documents: Iterable[dict[str, Any]], spacy_model: Language, args: Namespace
-) -> Iterable[dict[str, Any]]:
+def split_sentences(documents: Iterable[dict[str, Any]], spacy_model: Language,
+                    args: Namespace) -> Iterable[dict[str, Any]]:
     """Splits sentences using blank scipy model
 
     :param documents: Jsonl document dictionaries
@@ -71,8 +71,8 @@ def split_sentences(
     """
     raw_texts = get_raw_text_and_meta(documents)
     for idx, (spacy_doc) in enumerate(
-        spacy_model.pipe(raw_texts, n_process=os.cpu_count() // args.world_size)
-    ):
+            spacy_model.pipe(raw_texts,
+                             n_process=os.cpu_count() // args.world_size)):
         all_sentences = []
         for sent in spacy_doc.sents:
             all_sentences.append(sent.text_with_ws)
@@ -82,9 +82,8 @@ def split_sentences(
         }
 
 
-def combine_sentences(
-    sentences: Iterable[list[str]], args: Namespace
-) -> Iterable[list[str]]:
+def combine_sentences(sentences: Iterable[list[str]],
+                      args: Namespace) -> Iterable[list[str]]:
     """Combines sentences to make sure every sentence atleast has n thresholded chars
 
     :param sentences: List of sentences
@@ -115,7 +114,8 @@ def combine_sentences(
 if __name__ == "__main__":
     PARSE_JSONL_FILE = "01"
     parser = argparse.ArgumentParser(
-        prog="Sentencizes and classifies documents using detoxify from jsonl format",
+        prog=
+        "Sentencizes and classifies documents using detoxify from jsonl format",
     )
     parser.add_argument(
         "--dataset_path",
@@ -147,7 +147,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sentence_combine_char",
         default='""',
-        help="Character for combining sentences of less than threshold characters",
+        help=
+        "Character for combining sentences of less than threshold characters",
     )
 
     # Initialize distributed
@@ -173,7 +174,8 @@ if __name__ == "__main__":
     spacy_model = spacy.blank("en")
     sentencizer = spacy_model.add_pipe("sentencizer")
     spacy_model.max_length = 1e12
-    detoxify_model = Detoxify("original", device=f"cuda:{torch.cuda.current_device()}")
+    detoxify_model = Detoxify("original",
+                              device=f"cuda:{torch.cuda.current_device()}")
     detoxify_model.model.half()  # manually cast to fp16
 
     ds_iter = tqdm(
@@ -199,7 +201,7 @@ if __name__ == "__main__":
 
         # Get sentence scores
         for i in range(0, len(all_sents), args.classifier_batch_size):
-            sent_batch = all_sents[i : i + args.classifier_batch_size]
+            sent_batch = all_sents[i:i + args.classifier_batch_size]
             all_scores.extend(detoxify_model.predict(sent_batch)["toxicity"])
 
         # Store data in results

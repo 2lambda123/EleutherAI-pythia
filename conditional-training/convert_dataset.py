@@ -65,35 +65,30 @@ def train_tokenizer(args):
     """
     tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
     if not isinstance(tokenizer, PreTrainedTokenizerBase):
-        raise ValueError(f"{tokenizer=} must be of type PreTrainedTokenizerBase")
+        raise ValueError(
+            f"{tokenizer=} must be of type PreTrainedTokenizerBase")
 
     tokenizer.model_max_length = int(1e30)
     if args.bos_text + args.eos_text == "":
         test_tokens = tokenizer("test")
-        if (
-            test_tokens["input_ids"][0] != tokenizer.bos_token_id
-            and test_tokens["input_ids"][-1] != tokenizer.eos_token_i
-        ):
+        if (test_tokens["input_ids"][0] != tokenizer.bos_token_id
+                and test_tokens["input_ids"][-1] != tokenizer.eos_token_i):
             tok_error_msg = (
                 "This tokenizer does not insert an EOS nor BOS token. "
                 "Concatenating with this tokenizer will result in sequences being "
                 "attached without a separating token. Please use another tokenizer, "
                 "such as facebook/opt-125m, or specify EOS/BOS text with e.g. "
-                "--bos_text=<|endoftext|>."
-            )
+                "--bos_text=<|endoftext|>.")
             raise ValueError(tok_error_msg)
 
     tokenizer_path = (
         f"./{args.tokenizer.replace('/', '_')}-{args.num_sentinels}-special-tokens"
     )
     if args.rank == 0:
-        tokenizer.add_special_tokens(
-            {
-                "additional_special_tokens": [
-                    f"<|val{x}|>" for x in range(0, args.num_sentinels)
-                ]
-            }
-        )
+        tokenizer.add_special_tokens({
+            "additional_special_tokens":
+            [f"<|val{x}|>" for x in range(0, args.num_sentinels)]
+        })
         tokenizer.save_pretrained(tokenizer_path)
     if args.world_size != 1:
         dist.barrier()
@@ -181,13 +176,11 @@ def tokenize_sentences(args):
                 token_ids_buffer.append(tokenizer.eos_token_id)
 
             if len(token_ids_buffer) >= args.concat_tokens:
-                array = np.asarray(
-                    token_ids_buffer[: args.concat_tokens], dtype=np.int64
-                ).tobytes()
+                array = np.asarray(token_ids_buffer[:args.concat_tokens],
+                                   dtype=np.int64).tobytes()
                 yield {"tokens": array}
-                token_ids_buffer = (
-                    token_ids_buffer[args.concat_tokens :] if args.should_wrap else []
-                )
+                token_ids_buffer = (token_ids_buffer[args.concat_tokens:]
+                                    if args.should_wrap else [])
     dataloader.close()
     if args.world_size != 1:
         dist.barrier()
@@ -196,8 +189,8 @@ def tokenize_sentences(args):
 if __name__ == "__main__":
     LABEL_PROB = 0.0
     parser = argparse.ArgumentParser(
-        prog="Converts sentencized documents into megatron format and saves them",
-    )
+        prog=
+        "Converts sentencized documents into megatron format and saves them", )
     parser.add_argument(
         "--dataset_path",
         default=f"/weka/orz/pythia/pile-sentencized/",
@@ -213,10 +206,8 @@ if __name__ == "__main__":
         "--concat_tokens",
         default=2049,
         type=int,
-        help=(
-            "Convert text to tokens and concatenate up to this many tokens. "
-            "Set it to -1 if you do not intend to concatenate sentences"
-        ),
+        help=("Convert text to tokens and concatenate up to this many tokens. "
+              "Set it to -1 if you do not intend to concatenate sentences"),
     )
     parser.add_argument(
         "--tokenizer",
@@ -251,10 +242,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--temp_save_dir",
         default=f"/weka/orz/temp/{LABEL_PROB}/",
-        help=(
-            "Path to temporarily save data in a rank. "
-            "These are then combined to be saved in `save_dir`"
-        ),
+        help=("Path to temporarily save data in a rank. "
+              "These are then combined to be saved in `save_dir`"),
     )
     parser.add_argument(
         "--label_prob",
@@ -264,10 +253,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--should_wrap",
         default=True,
-        help=(
-            "Should the leftover tokens after `concat_tokens` warp to next sequence, "
-            "in case where `concat_tokens` > 0"
-        ),
+        help=
+        ("Should the leftover tokens after `concat_tokens` warp to next sequence, "
+         "in case where `concat_tokens` > 0"),
     )
     parser.add_argument(
         "--compression",
@@ -305,17 +293,19 @@ if __name__ == "__main__":
         dist.barrier()
     if args.rank == 0:
         with MDSWriter(
-            columns=columns,
-            out=args.save_dir,
-            compression=args.compression,
+                columns=columns,
+                out=args.save_dir,
+                compression=args.compression,
         ) as combined:
             for rank in range(args.world_size):
-                rank_save_dir_temp = os.path.join(args.temp_save_dir, str(args.rank))
+                rank_save_dir_temp = os.path.join(args.temp_save_dir,
+                                                  str(args.rank))
                 reader = StreamingDataset(
                     local=rank_save_dir_temp,
                     shuffle=False,
                 )
-                for document in tqdm(reader, desc=f"Combining from rank: {rank}"):
+                for document in tqdm(reader,
+                                     desc=f"Combining from rank: {rank}"):
                     combined.write(document)
 
     if args.world_size != 1:

@@ -31,7 +31,8 @@ class ConcatMode(Enum):
 def parse_args() -> Namespace:
     """Parse commandline arguments."""
     parser = ArgumentParser(
-        description="Convert dataset into MDS format, optionally concatenating and tokenizing"
+        description=
+        "Convert dataset into MDS format, optionally concatenating and tokenizing"
     )
     parser.add_argument("--path", type=str, required=True)
     parser.add_argument("--out_root", type=str, required=True)
@@ -51,27 +52,31 @@ def parse_args() -> Namespace:
     parser.add_argument("--no_wrap", default=False, action="store_true")
 
     # add Cond. Training specific args here
-    parser.add_argument("--num-sentinels", type=int, required=False, default=None)
+    parser.add_argument("--num-sentinels",
+                        type=int,
+                        required=False,
+                        default=None)
     # probability of using a sentinel token at any given place
-    parser.add_argument("--label_prob", type=float, required=False, default=0.9)
+    parser.add_argument("--label_prob",
+                        type=float,
+                        required=False,
+                        default=0.9)
 
     parsed = parser.parse_args()
 
-    if (
-        os.path.isdir(parsed.out_root)
-        and len(set(os.listdir(parsed.out_root)).intersection(set(parsed.split))) > 0
-    ):
+    if (os.path.isdir(parsed.out_root) and len(
+            set(os.listdir(parsed.out_root)).intersection(set(parsed.split)))
+            > 0):
         raise ValueError(
             f"--out_root={parsed.out_root} contains {os.listdir(parsed.out_root)} which cannot overlap with the requested splits {parsed.splits}."
         )
 
     # Make sure we have needed concat options
-    if (
-        parsed.concat_tokens is not None
-        and isinstance(parsed.concat_tokens, int)
-        and parsed.tokenizer is None
-    ):
-        parser.error("When setting --concat_tokens, you must specify a --tokenizer")
+    if (parsed.concat_tokens is not None
+            and isinstance(parsed.concat_tokens, int)
+            and parsed.tokenizer is None):
+        parser.error(
+            "When setting --concat_tokens, you must specify a --tokenizer")
 
     # now that we have validated them, change BOS/EOS to strings
     if parsed.bos_text is None:
@@ -83,11 +88,13 @@ def parse_args() -> Namespace:
 
 class ConcatLabeledTokensDataset(ConcatTokensDataset):
     """ """
+
     # subclass of ConcatTokens dataset.
 
     def __init__(self, *args, **kwargs):
 
-        assert "score_to_label" in kwargs and callable(kwargs["score_to_label"])
+        assert "score_to_label" in kwargs and callable(
+            kwargs["score_to_label"])
         assert "label_prob" in kwargs
 
         self.score_to_label = kwargs.pop("score_to_label")
@@ -110,8 +117,8 @@ class ConcatLabeledTokensDataset(ConcatTokensDataset):
                     iids = encoded["input_ids"]
                 buffer = buffer + self.bos_tokens + iids + self.eos_tokens
             while len(buffer) >= self.max_length:
-                concat_sample = buffer[: self.max_length]
-                buffer = buffer[self.max_length :] if self.should_wrap else []
+                concat_sample = buffer[:self.max_length]
+                buffer = buffer[self.max_length:] if self.should_wrap else []
                 yield {
                     # convert to bytes to store in MDS binary format
                     "tokens": np.asarray(concat_sample).tobytes()
@@ -169,21 +176,22 @@ def build_hf_dataset(
     else:
         data_files = path
 
-    hf_dataset = hf_datasets.load_dataset("json", data_files=data_files, split=split)
+    hf_dataset = hf_datasets.load_dataset("json",
+                                          data_files=data_files,
+                                          split=split)
 
     if mode == ConcatMode.NO_CONCAT:
         dataset = NoConcatDataset(hf_dataset)
     else:
         if not isinstance(tokenizer, PreTrainedTokenizerBase):
-            raise ValueError(f"{tokenizer=} must be of type PreTrainedTokenizerBase")
+            raise ValueError(
+                f"{tokenizer=} must be of type PreTrainedTokenizerBase")
         if max_length is None:
             raise ValueError(f"max_length must be set.")
         if bos_text + eos_text == "":
             test_tokens = tokenizer("test")
-            if (
-                test_tokens["input_ids"][0] != tokenizer.bos_token_id
-                and test_tokens["input_ids"][-1] != tokenizer.eos_token_id
-            ):
+            if (test_tokens["input_ids"][0] != tokenizer.bos_token_id and
+                    test_tokens["input_ids"][-1] != tokenizer.eos_token_id):
                 tok_error_msg = "This tokenizer does not insert an EOS nor BOS token. "
                 tok_error_msg += (
                     "Concatenating with this tokenizer will result in sequences being "
@@ -208,7 +216,8 @@ def build_hf_dataset(
 
 
 def generate_samples(
-    loader: DataLoader, truncate_num_samples: Optional[int] = None
+        loader: DataLoader,
+        truncate_num_samples: Optional[int] = None
 ) -> Iterable[Dict[str, bytes]]:
     """Generator over samples of a dataloader.
 
@@ -253,13 +262,10 @@ def main(args: Namespace) -> None:
 
     # add special tokens to tokenizer, and save it
 
-    tokenizer.add_special_tokens(
-        {
-            "additional_special_tokens": [
-                f"<|val{x}|>" for x in range(0, args.num_sentinels)
-            ]
-        }
-    )
+    tokenizer.add_special_tokens({
+        "additional_special_tokens":
+        [f"<|val{x}|>" for x in range(0, args.num_sentinels)]
+    })
 
     print(tokenizer.all_special_ids, tokenizer.all_special_tokens)
     print(tokenizer.decode([50277, 50278]))
@@ -275,6 +281,7 @@ def main(args: Namespace) -> None:
         :param score: float:
 
         """
+
         def score_to_bucket(score: float) -> int:
             """
 
@@ -311,9 +318,9 @@ def main(args: Namespace) -> None:
         f"Note that the progress bar is based on the dataset length before tokenization."
     )
     print(f"It will finish at a value below 100% if tokenizing")
-    with MDSWriter(
-        columns=columns, out=os.path.join(args.out_root), compression=args.compression
-    ) as out:
+    with MDSWriter(columns=columns,
+                   out=os.path.join(args.out_root),
+                   compression=args.compression) as out:
         for sample in tqdm(dataset):
             out.write(sample)
 
