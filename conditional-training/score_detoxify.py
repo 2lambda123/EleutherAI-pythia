@@ -24,6 +24,7 @@ import torch.distributed as dist
 
 # Initialize parallel
 
+
 def init_distributed(rank: int, world_size: int):
     """Initializes torch distributed group
 
@@ -31,15 +32,17 @@ def init_distributed(rank: int, world_size: int):
         rank (int): Rank of current process
         world size (int): Total number of processes
     """
-    dist.init_process_group(backend = "nccl", rank = rank, world_size = world_size)
+    dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
 
 # Document parsing functions
+
 
 def get_raw_text_and_meta(documents: Iterable[dict[str, Any]]) -> Iterable[Tuple[str]]:
     """Yields an iterator that extracts text from jsonl document"""
     for document in documents:
         yield document['text']
+
 
 def split_sentences(
     documents: Iterable[dict[str, Any]],
@@ -47,7 +50,7 @@ def split_sentences(
     args: Namespace
 ) -> Iterable[dict[str, Any]]:
     """Splits sentences using blank scipy model
-    
+
     Args:
         documents: Jsonl document dictionaries
         spacy_model: Blank En model for splitting sentences
@@ -62,16 +65,17 @@ def split_sentences(
         for sent in spacy_doc.sents:
             all_sentences.append(sent.text_with_ws)
         yield {
-            'sentences': all_sentences,  
+            'sentences': all_sentences,
             'idx': idx,
         }
+
 
 def combine_sentences(
     sentences: Iterable[list[str]],
     args: Namespace
 ) -> Iterable[list[str]]:
     """Combines sentences to make sure every sentence atleast has n thresholded chars
-    
+
     Args:
         sentences: List of sentences
         args: Arguments from argparse.Parser
@@ -87,51 +91,52 @@ def combine_sentences(
             res_sents[-1] += args.sentence_combine_char + sentence
         else:
             res_sents.append(sentence)
-    
+
     # Last sentence might still be less than thresholded chars
     if (len(sentences[-1]) < args.sentence_min_char_threshold):
-        if(len(sentences) > 1):
+        if (len(sentences) > 1):
             sentences[-2] += args.sentence_combine_char + sentences[-1]
             sentences = sentences[:-1]
-    
+
     return res_sents
-    
+
+
 if __name__ == '__main__':
     PARSE_JSONL_FILE = '01'
     parser = argparse.ArgumentParser(
-        prog = 'Sentencizes and classifies documents using detoxify from jsonl format',
+        prog='Sentencizes and classifies documents using detoxify from jsonl format',
     )
     parser.add_argument(
         '--dataset_path',
-        default = f'/fsx/orz/temp/{PARSE_JSONL_FILE}.jsonl',
-        help = 'Path to dataset of jsonl file'
+        default=f'/fsx/orz/temp/{PARSE_JSONL_FILE}.jsonl',
+        help='Path to dataset of jsonl file'
     )
     parser.add_argument(
         '--batch_size',
-        default = 1024,
-        type = int,
-        help = 'Batch size while classifying sentences'
+        default=1024,
+        type=int,
+        help='Batch size while classifying sentences'
     )
     parser.add_argument(
         '--classifier_batch_size',
-        default = 1024,
-        type = int,
-        help = 'Batch size of Detoxify classifier'
+        default=1024,
+        type=int,
+        help='Batch size of Detoxify classifier'
     )
     parser.add_argument(
         '--save_dir',
-        default = f'/fsx/orz/temp/{PARSE_JSONL_FILE}/',
-        help = 'Path to save resultant jsonl directory'
+        default=f'/fsx/orz/temp/{PARSE_JSONL_FILE}/',
+        help='Path to save resultant jsonl directory'
     )
     parser.add_argument(
         '--sentence_min_char_threshold',
-        default = 10,
-        help = 'Threshold to combine sentences of less than n chars'
+        default=10,
+        help='Threshold to combine sentences of less than n chars'
     )
     parser.add_argument(
         '--sentence_combine_char',
-        default = '""',
-        help = 'Character for combining sentences of less than threshold characters'
+        default='""',
+        help='Character for combining sentences of less than threshold characters'
     )
 
     # Initialize distributed
@@ -157,14 +162,15 @@ if __name__ == '__main__':
     spacy_model = spacy.blank("en")
     sentencizer = spacy_model.add_pipe("sentencizer")
     spacy_model.max_length = 1e12
-    detoxify_model = Detoxify('original', device=f'cuda:{torch.cuda.current_device()}')
-    detoxify_model.model.half() # manually cast to fp16
-    
+    detoxify_model = Detoxify(
+        'original', device=f'cuda:{torch.cuda.current_device()}')
+    detoxify_model.model.half()  # manually cast to fp16
+
     ds_iter = tqdm(
-        ds_iter, 
-        position=args.rank, 
-        desc = f'rank-{args.rank}: Iterating through data',
-        total = len(dataloader)
+        ds_iter,
+        position=args.rank,
+        desc=f'rank-{args.rank}: Iterating through data',
+        total=len(dataloader)
     )
 
     # Iterate and classify
@@ -197,14 +203,15 @@ if __name__ == '__main__':
             scores = results[idx]['scores']
 
             if len(scores) == 0:
-                raise ValueError(f"Sequence {results[idx]['text']} has no sentences {results[idx]['sentences']}")
+                raise ValueError(
+                    f"Sequence {results[idx]['text']} has no sentences {results[idx]['sentences']}")
             results[idx]['new_meta'] = {
                 'avg_score': np.mean(scores),
                 'num_sents': len(sentences)
             }
         dataloader.save(results)
-    
-    dataloader.close()    
+
+    dataloader.close()
     dist.barrier()
     dataloader.combine(args.save_dir)
     dist.barrier()
