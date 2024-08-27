@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # coding=utf-8
-
 """
 This file contains the code for Converting Scored Jsonl documents into megatron format
 
 Example Usage: torchrun -nproc-per-node 8 convert_dataset.py
 """
-
 import argparse
 import copy
 import os
@@ -16,7 +14,9 @@ import time
 from argparse import Namespace
 from enum import Enum
 from glob import glob
-from typing import Any, Iterable, Tuple
+from typing import Any
+from typing import Iterable
+from typing import Tuple
 
 import numpy as np
 import spacy
@@ -24,9 +24,11 @@ import torch
 import torch.distributed as dist
 from load_jsonl import LocalJsonlLoader
 from spacy import Language
-from streaming import MDSWriter, StreamingDataset
+from streaming import MDSWriter
+from streaming import StreamingDataset
 from tqdm.auto import tqdm
-from transformers import AutoTokenizer, PreTrainedTokenizerBase
+from transformers import AutoTokenizer
+from transformers import PreTrainedTokenizerBase
 
 
 class ConcatMode(Enum):

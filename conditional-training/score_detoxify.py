@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # coding=utf-8
-
 """
 This file contains the code for Scoring JsonL documents and saving them
 
 Example Usage: torchrun -nproc-per-node 8 score_detoxify.py
 """
-
 import argparse
 import os
 import socket
 import time
 from argparse import Namespace
-from typing import Any, Iterable, Tuple
+from typing import Any
+from typing import Iterable
+from typing import Tuple
 
 import numpy as np
 import spacy

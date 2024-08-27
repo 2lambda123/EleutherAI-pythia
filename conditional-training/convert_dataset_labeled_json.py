@@ -1,20 +1,25 @@
 # Copyright 2022 MosaicML LLM Foundry authors
 # SPDX-License-Identifier: Apache-2.0
-
 """Streaming dataset conversion scripts for json files."""
 import os
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
+from argparse import Namespace
 from enum import Enum
 from glob import glob
-from typing import Dict, Iterable, Optional
+from typing import Dict
+from typing import Iterable
+from typing import Optional
 
 import datasets as hf_datasets
 import numpy as np
-from llmfoundry.data import ConcatTokensDataset, NoConcatDataset
+from llmfoundry.data import ConcatTokensDataset
+from llmfoundry.data import NoConcatDataset
 from streaming import MDSWriter
-from torch.utils.data import DataLoader, IterableDataset
+from torch.utils.data import DataLoader
+from torch.utils.data import IterableDataset
 from tqdm import tqdm
-from transformers import AutoTokenizer, PreTrainedTokenizerBase
+from transformers import AutoTokenizer
+from transformers import PreTrainedTokenizerBase
 
 
 class ConcatMode(Enum):
