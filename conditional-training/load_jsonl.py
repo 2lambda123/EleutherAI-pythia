@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 
 
 class JsonlLoader(ABC):
-    """Dataset registry class to extract / stream jsonl dataset. 
+    """Dataset registry class to extract / stream jsonl dataset.
 
     Sequences are loaded such that rank `i` gets every ith sequence
 
@@ -43,14 +43,14 @@ class JsonlLoader(ABC):
         """Combines individual rank files into one"""
 
     def to_jsonl(self, data: dict):
-        """Utility function to convert dictionary to a json line. 
+        """Utility function to convert dictionary to a json line.
 
         Default converter is inefficient
 
         Returns:
             Json line in binary format
         """
-        return json.dumps(data).encode("UTF-8") + b'\n'
+        return json.dumps(data).encode("UTF-8") + b"\n"
 
     def count_lines(self, filename):
         """Utility function that counts number of documents in a jsonl file
@@ -70,7 +70,7 @@ class JsonlLoader(ABC):
 
         buf = read_f(buf_size)
         while buf:
-            lines += buf.count('\n')
+            lines += buf.count("\n")
             buf = read_f(buf_size)
 
         return lines
@@ -80,9 +80,9 @@ class LocalJsonlLoader(JsonlLoader):
     """Loads a jsonl file from local directory"""
 
     def load(self, load_path, save_dir=None):
-        self.loader = jsonlines.open(load_path, mode='r')
+        self.loader = jsonlines.open(load_path, mode="r")
 
-        if save_dir is not None and save_dir != '':
+        if save_dir is not None and save_dir != "":
             os.makedirs(save_dir, exist_ok=True)
             save_path = os.path.join(save_dir, f"{self.curr_rank}.jsonl")
             self.writer = open(save_path, mode="wb")
@@ -95,29 +95,28 @@ class LocalJsonlLoader(JsonlLoader):
     def __iter__(self):
         current_batch = []
 
-        iterator = self.loader.iter(
-            type=dict, skip_invalid=True, skip_empty=True)
+        iterator = self.loader.iter(type=dict, skip_invalid=True, skip_empty=True)
         for idx, doc in enumerate(iterator):
-            if (doc['text'] == ''):
+            if doc["text"] == "":
                 continue
             if not (idx % self.world_size == self.curr_rank):
                 continue
 
             current_batch.append(doc)
             if len(current_batch) >= self.batch_size:
-                batch = current_batch[:self.batch_size]
-                current_batch = current_batch[self.batch_size:]
+                batch = current_batch[: self.batch_size]
+                current_batch = current_batch[self.batch_size :]
                 yield batch
 
     def save(self, documents):
-        all_data = b''
+        all_data = b""
         for document in documents:
             all_data += self.to_jsonl(document)
         self.writer.write(all_data)
 
     def close(self):
         self.loader.close()
-        if hasattr(self, 'writer'):
+        if hasattr(self, "writer"):
             self.writer.close()
 
     def __len__(self):
@@ -127,16 +126,16 @@ class LocalJsonlLoader(JsonlLoader):
         if self.curr_rank != 0:
             return
 
-        save_path = os.path.join(save_dir, 'res.jsonl')
-        save_fp = open(save_path, 'ab')
+        save_path = os.path.join(save_dir, "res.jsonl")
+        save_fp = open(save_path, "ab")
 
         for i in tqdm(range(0, self.world_size), desc="Combining jsonl files"):
-            buff_size = 1024*1024
-            rank_path = os.path.join(save_dir, f'{i}.jsonl')
-            with open(rank_path, 'rb') as rank_fp:
+            buff_size = 1024 * 1024
+            rank_path = os.path.join(save_dir, f"{i}.jsonl")
+            with open(rank_path, "rb") as rank_fp:
                 while True:
                     buff = rank_fp.read(buff_size)
                     save_fp.write(buff)
-                    if (len(buff) != buff_size):
+                    if len(buff) != buff_size:
                         break
             os.remove(rank_path)
