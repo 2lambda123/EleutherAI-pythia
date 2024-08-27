@@ -7,20 +7,21 @@ This file contains the code for Scoring JsonL documents and saving them
 Example Usage: torchrun -nproc-per-node 8 score_detoxify.py
 """
 
-import os
-import torch
 import argparse
+import os
 import socket
-import spacy
 import time
-from spacy import Language
-from typing import Iterable, Tuple, Any
-from load_jsonl import LocalJsonlLoader
 from argparse import Namespace
+from typing import Any, Iterable, Tuple
+
 import numpy as np
-from tqdm.auto import tqdm
-from detoxify import Detoxify
+import spacy
+import torch
 import torch.distributed as dist
+from detoxify import Detoxify
+from load_jsonl import LocalJsonlLoader
+from spacy import Language
+from tqdm.auto import tqdm
 
 # Initialize parallel
 

@@ -7,25 +7,25 @@ This file contains the code for Converting Scored Jsonl documents into megatron 
 Example Usage: torchrun -nproc-per-node 8 convert_dataset.py
 """
 
-import os
-import torch
 import argparse
-import socket
 import copy
-import spacy
-import time
+import os
 import shutil
-from spacy import Language
-from typing import Iterable, Tuple, Any
-from load_jsonl import LocalJsonlLoader
+import socket
+import time
 from argparse import Namespace
 from enum import Enum
 from glob import glob
-import numpy as np
-from tqdm.auto import tqdm
-import torch.distributed as dist
-from streaming import MDSWriter, StreamingDataset
+from typing import Any, Iterable, Tuple
 
+import numpy as np
+import spacy
+import torch
+import torch.distributed as dist
+from load_jsonl import LocalJsonlLoader
+from spacy import Language
+from streaming import MDSWriter, StreamingDataset
+from tqdm.auto import tqdm
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
 
