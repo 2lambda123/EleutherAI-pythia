@@ -9,8 +9,9 @@ from tqdm.auto import tqdm
 
 class JsonlLoader(ABC):
     """Dataset registry class to extract / stream jsonl dataset.
-
+    
     Sequences are loaded such that rank `i` gets every ith sequence
+
 
     """
 
@@ -45,24 +46,24 @@ class JsonlLoader(ABC):
 
     def to_jsonl(self, data: dict):
         """Utility function to convert dictionary to a json line.
-
+        
         Default converter is inefficient
 
-        Returns:
-            Json line in binary format
+        :param data: dict: 
+        :returns: Json line in binary format
+
         """
         return json.dumps(data).encode("UTF-8") + b"\n"
 
     def count_lines(self, filename):
         """Utility function that counts number of documents in a jsonl file
-
+        
         Refer to https://stackoverflow.com/a/850962 for more info on why it's efficient
 
-        Args:
-            filename (str): Path to a file
+        :param filename: Path to a file
+        :type filename: str
+        :returns: (int) Number of Lines (documents) in the given jsonl file
 
-        Returns:
-            (int) Number of Lines (documents) in the given jsonl file
         """
         f = open(filename)
         lines = 0
@@ -81,6 +82,12 @@ class LocalJsonlLoader(JsonlLoader):
     """Loads a jsonl file from local directory"""
 
     def load(self, load_path, save_dir=None):
+        """
+
+        :param load_path: 
+        :param save_dir:  (Default value = None)
+
+        """
         self.loader = jsonlines.open(load_path, mode="r")
 
         if save_dir is not None and save_dir != "":
@@ -110,12 +117,18 @@ class LocalJsonlLoader(JsonlLoader):
                 yield batch
 
     def save(self, documents):
+        """
+
+        :param documents: 
+
+        """
         all_data = b""
         for document in documents:
             all_data += self.to_jsonl(document)
         self.writer.write(all_data)
 
     def close(self):
+        """ """
         self.loader.close()
         if hasattr(self, "writer"):
             self.writer.close()
@@ -124,6 +137,11 @@ class LocalJsonlLoader(JsonlLoader):
         return self.reader_length
 
     def combine(self, save_dir):
+        """
+
+        :param save_dir: 
+
+        """
         if self.curr_rank != 0:
             return
 

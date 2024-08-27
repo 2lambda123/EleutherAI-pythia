@@ -29,9 +29,13 @@ from tqdm.auto import tqdm
 def init_distributed(rank: int, world_size: int):
     """Initializes torch distributed group
 
-    Args:
-        rank (int): Rank of current process
-        world size (int): Total number of processes
+    :param rank: Rank of current process
+    :type rank: int
+    :param world size: Total number of processes
+    :type world size: int
+    :param rank: int: 
+    :param world_size: int: 
+
     """
     dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
@@ -41,7 +45,12 @@ def init_distributed(rank: int, world_size: int):
 
 
 def get_raw_text_and_meta(documents: Iterable[dict[str, Any]]) -> Iterable[Tuple[str]]:
-    """Yields an iterator that extracts text from jsonl document"""
+    """Yields an iterator that extracts text from jsonl document
+
+    :param documents: Iterable[dict[str: 
+    :param Any]]: 
+
+    """
     for document in documents:
         yield document["text"]
 
@@ -51,13 +60,14 @@ def split_sentences(
 ) -> Iterable[dict[str, Any]]:
     """Splits sentences using blank scipy model
 
-    Args:
-        documents: Jsonl document dictionaries
-        spacy_model: Blank En model for splitting sentences
-        args: Arguments from argparse.Parser
+    :param documents: Jsonl document dictionaries
+    :param spacy_model: Blank En model for splitting sentences
+    :param args: Arguments from argparse.Parser
+    :param documents: Iterable[dict[str: 
+    :param Any]]: 
+    :param spacy_model: Language: 
+    :param args: Namespace: 
 
-    Yields:
-        Dictionary with sentences from a document and document's corresponding index
     """
     raw_texts = get_raw_text_and_meta(documents)
     for idx, (spacy_doc) in enumerate(
@@ -77,12 +87,12 @@ def combine_sentences(
 ) -> Iterable[list[str]]:
     """Combines sentences to make sure every sentence atleast has n thresholded chars
 
-    Args:
-        sentences: List of sentences
-        args: Arguments from argparse.Parser
+    :param sentences: List of sentences
+    :param args: Arguments from argparse.Parser
+    :param sentences: Iterable[list[str]]: 
+    :param args: Namespace: 
+    :returns: Sentences, combined
 
-    Returns:
-        Sentences, combined
     """
     res_sents = []
     for sentence in sentences:

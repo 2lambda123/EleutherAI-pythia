@@ -30,6 +30,7 @@ from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
 
 class ConcatMode(Enum):
+    """ """
     NO_CONCAT = "NO_CONCAT"
     CONCAT_TOKENS = "CONCAT_TOKENS"
 
@@ -40,9 +41,13 @@ class ConcatMode(Enum):
 def init_distributed(rank: int, world_size: int):
     """Initializes torch distributed group
 
-    Args:
-        rank (int): Rank of current process
-        world size (int): Total number of processes
+    :param rank: Rank of current process
+    :type rank: int
+    :param world size: Total number of processes
+    :type world size: int
+    :param rank: int: 
+    :param world_size: int: 
+
     """
     dist.init_process_group(backend="gloo", rank=rank, world_size=world_size)
 
@@ -51,11 +56,10 @@ def init_distributed(rank: int, world_size: int):
 def train_tokenizer(args):
     """Trains a tokenizer based on the arguments provided, saves it and returns the tokenizer
 
-    Args:
-        args (Namespace): Input arguments
+    :param args: Input arguments
+    :type args: Namespace
+    :returns: (PretrainedTokenizerBase) tokenizer with additional sentinel tokens
 
-    Returns:
-        (PretrainedTokenizerBase) tokenizer with additional sentinel tokens
     """
     tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
     if not isinstance(tokenizer, PreTrainedTokenizerBase):
@@ -101,10 +105,13 @@ def train_tokenizer(args):
 def score_to_label(args, tokenizer, score):
     """Returns sentinel token for a sentence based on it's toxicity score
 
-    Args:
-        args (Namespace): Input arguments
-        tokenizer (PreTrainedTokenizerBase): Tokenizer with additional tokens trained
-        score (float): Score of current sentence
+    :param args: Input arguments
+    :type args: Namespace
+    :param tokenizer: Tokenizer with additional tokens trained
+    :type tokenizer: PreTrainedTokenizerBase
+    :param score: Score of current sentence
+    :type score: float
+
     """
     val = 0
     for cutoff in args.sentinel_cutoffs:
@@ -119,11 +126,11 @@ def score_to_label(args, tokenizer, score):
 def tokenize_sentences(args):
     """Tokenizes sentences and yields tokens of sentences
 
-    Args:
-        args (Namespace): Input arguments
+    :param args: Input arguments
+    :type args: Namespace
+    :returns: -> Tokenized tensor in bytes
+    :rtype: bytes
 
-    Returns:
-        (bytes): Tokenized tensor in bytes
     """
     # Initialize dataset
     if os.path.isdir(args.dataset_path):

@@ -18,6 +18,7 @@ from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
 
 class ConcatMode(Enum):
+    """ """
     NO_CONCAT = "NO_CONCAT"
     CONCAT_TOKENS = "CONCAT_TOKENS"
 
@@ -76,6 +77,7 @@ def parse_args() -> Namespace:
 
 
 class ConcatLabeledTokensDataset(ConcatTokensDataset):
+    """ """
     # subclass of ConcatTokens dataset.
 
     def __init__(self, *args, **kwargs):
@@ -125,20 +127,37 @@ def build_hf_dataset(
 ) -> IterableDataset:
     """Build an IterableDataset over the HF C4 or pile source data.
 
-    Args:
-        dataset_name (str): Dataset name
-        split (str): Split name.
-        mode (ConcatMode): NO_CONCAT, or CONCAT_TOKENS
-        max_length (int): The length of concatenated tokens
-        bos_text (str): text to insert at the beginning of each sequence
-        eos_text (str): text to insert at the end of each sequence
-        no_wrap (bool): if concatenating, whether to wrap text across `max_length` boundaries
-        tokenizer (PreTrainedTokenizerBase): if mode is CONCAT_TOKENS, the tokenizer to use
-        data_subset (str): Referred to as "name" in HuggingFace datasets.load_dataset.
+    :param dataset_name: Dataset name
+    :type dataset_name: str
+    :param split: Split name.
+    :type split: str
+    :param mode: NO_CONCAT, or CONCAT_TOKENS
+    :type mode: ConcatMode
+    :param max_length: The length of concatenated tokens
+    :type max_length: int
+    :param bos_text: text to insert at the beginning of each sequence
+    :type bos_text: str
+    :param eos_text: text to insert at the end of each sequence
+    :type eos_text: str
+    :param no_wrap: if concatenating, whether to wrap text across `max_length` boundaries
+    :type no_wrap: bool
+    :param tokenizer: if mode is CONCAT_TOKENS, the tokenizer to use
+    :type tokenizer: PreTrainedTokenizerBase
+    :param data_subset: Referred to as "name" in HuggingFace datasets.load_dataset.
             Typically "all" (The Pile) or "en" (c4).
+    :type data_subset: str
+    :param path: str: 
+    :param split: str: 
+    :param mode: ConcatMode: 
+    :param max_length: Optional[int]:  (Default value = None)
+    :param bos_text: str:  (Default value = "")
+    :param eos_text: str:  (Default value = "")
+    :param no_wrap: bool:  (Default value = False)
+    :param tokenizer: PreTrainedTokenizerBase:  (Default value = None)
+    :param score_to_label: callable:  (Default value = None)
+    :param label_prob: float:  (Default value = None)
+    :returns: An IterableDataset.
 
-    Returns:
-        An IterableDataset.
     """
     if os.path.isdir(path):
         data_files = glob(f"{path}/*")
@@ -188,12 +207,13 @@ def generate_samples(
 ) -> Iterable[Dict[str, bytes]]:
     """Generator over samples of a dataloader.
 
-    Args:
-       loader (DataLoader): A dataloader emitting batches like {key: [sample0_bytes, sample1_bytes, sample2_bytes, ...]}
-       truncate_num_samples (Optional[int]): An optional # of samples to stop at.
+    :param loader: A dataloader emitting batches like {key: [sample0_bytes, sample1_bytes, sample2_bytes, ...]}
+    :type loader: DataLoader
+    :param truncate_num_samples: An optional # of samples to stop at.
+    :type truncate_num_samples: Optional[int]
+    :param loader: DataLoader: 
+    :param truncate_num_samples: Optional[int]:  (Default value = None)
 
-    Yields:
-        Sample dicts.
     """
     n_samples = 0
     for batch in loader:
@@ -209,8 +229,10 @@ def generate_samples(
 def main(args: Namespace) -> None:
     """Main: create C4/pile streaming dataset.
 
-    Args:
-        args (Namespace): Commandline arguments.
+    :param args: Commandline arguments.
+    :type args: Namespace
+    :param args: Namespace: 
+
     """
 
     if args.concat_tokens is not None:
@@ -243,7 +265,17 @@ def main(args: Namespace) -> None:
 
     # define score_to_label fn
     def score_to_label(score: float) -> int:
+        """
+
+        :param score: float: 
+
+        """
         def score_to_bucket(score: float) -> int:
+            """
+
+            :param score: float: 
+
+            """
             # simple bucketing -- bucket scores greater than cutoff into bucket1, lower into bucket0
             if score < 5.6e-4:
                 return 1  # this means that toxic data is in the val0 bucket
