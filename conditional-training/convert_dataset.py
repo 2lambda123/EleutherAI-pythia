@@ -47,8 +47,8 @@ def init_distributed(rank: int, world_size: int):
     :type rank: int
     :param world size: Total number of processes
     :type world size: int
-    :param rank: int: 
-    :param world_size: int: 
+    :param rank: int:
+    :param world_size: int:
 
     """
     dist.init_process_group(backend="gloo", rank=rank, world_size=world_size)

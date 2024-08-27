@@ -33,8 +33,8 @@ def init_distributed(rank: int, world_size: int):
     :type rank: int
     :param world size: Total number of processes
     :type world size: int
-    :param rank: int: 
-    :param world_size: int: 
+    :param rank: int:
+    :param world_size: int:
 
     """
     dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
@@ -47,8 +47,8 @@ def init_distributed(rank: int, world_size: int):
 def get_raw_text_and_meta(documents: Iterable[dict[str, Any]]) -> Iterable[Tuple[str]]:
     """Yields an iterator that extracts text from jsonl document
 
-    :param documents: Iterable[dict[str: 
-    :param Any]]: 
+    :param documents: Iterable[dict[str:
+    :param Any]]:
 
     """
     for document in documents:
@@ -63,10 +63,10 @@ def split_sentences(
     :param documents: Jsonl document dictionaries
     :param spacy_model: Blank En model for splitting sentences
     :param args: Arguments from argparse.Parser
-    :param documents: Iterable[dict[str: 
-    :param Any]]: 
-    :param spacy_model: Language: 
-    :param args: Namespace: 
+    :param documents: Iterable[dict[str:
+    :param Any]]:
+    :param spacy_model: Language:
+    :param args: Namespace:
 
     """
     raw_texts = get_raw_text_and_meta(documents)
@@ -89,8 +89,8 @@ def combine_sentences(
 
     :param sentences: List of sentences
     :param args: Arguments from argparse.Parser
-    :param sentences: Iterable[list[str]]: 
-    :param args: Namespace: 
+    :param sentences: Iterable[list[str]]:
+    :param args: Namespace:
     :returns: Sentences, combined
 
     """

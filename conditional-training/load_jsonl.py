@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 
 class JsonlLoader(ABC):
     """Dataset registry class to extract / stream jsonl dataset.
-    
+
     Sequences are loaded such that rank `i` gets every ith sequence
 
 
@@ -47,10 +47,10 @@ class JsonlLoader(ABC):
 
     def to_jsonl(self, data: dict):
         """Utility function to convert dictionary to a json line.
-        
+
         Default converter is inefficient
 
-        :param data: dict: 
+        :param data: dict:
         :returns: Json line in binary format
 
         """
@@ -58,7 +58,7 @@ class JsonlLoader(ABC):
 
     def count_lines(self, filename):
         """Utility function that counts number of documents in a jsonl file
-        
+
         Refer to https://stackoverflow.com/a/850962 for more info on why it's efficient
 
         :param filename: Path to a file
@@ -85,7 +85,7 @@ class LocalJsonlLoader(JsonlLoader):
     def load(self, load_path, save_dir=None):
         """
 
-        :param load_path: 
+        :param load_path:
         :param save_dir:  (Default value = None)
 
         """
@@ -120,7 +120,7 @@ class LocalJsonlLoader(JsonlLoader):
     def save(self, documents):
         """
 
-        :param documents: 
+        :param documents:
 
         """
         all_data = b""
@@ -140,7 +140,7 @@ class LocalJsonlLoader(JsonlLoader):
     def combine(self, save_dir):
         """
 
-        :param save_dir: 
+        :param save_dir:
 
         """
         if self.curr_rank != 0:

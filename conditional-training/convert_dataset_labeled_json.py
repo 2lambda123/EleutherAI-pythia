@@ -151,9 +151,9 @@ def build_hf_dataset(
     :param data_subset: Referred to as "name" in HuggingFace datasets.load_dataset.
             Typically "all" (The Pile) or "en" (c4).
     :type data_subset: str
-    :param path: str: 
-    :param split: str: 
-    :param mode: ConcatMode: 
+    :param path: str:
+    :param split: str:
+    :param mode: ConcatMode:
     :param max_length: Optional[int]:  (Default value = None)
     :param bos_text: str:  (Default value = "")
     :param eos_text: str:  (Default value = "")
@@ -216,7 +216,7 @@ def generate_samples(
     :type loader: DataLoader
     :param truncate_num_samples: An optional # of samples to stop at.
     :type truncate_num_samples: Optional[int]
-    :param loader: DataLoader: 
+    :param loader: DataLoader:
     :param truncate_num_samples: Optional[int]:  (Default value = None)
 
     """
@@ -236,7 +236,7 @@ def main(args: Namespace) -> None:
 
     :param args: Commandline arguments.
     :type args: Namespace
-    :param args: Namespace: 
+    :param args: Namespace:
 
     """
 
@@ -272,13 +272,13 @@ def main(args: Namespace) -> None:
     def score_to_label(score: float) -> int:
         """
 
-        :param score: float: 
+        :param score: float:
 
         """
         def score_to_bucket(score: float) -> int:
             """
 
-            :param score: float: 
+            :param score: float:
 
             """
             # simple bucketing -- bucket scores greater than cutoff into bucket1, lower into bucket0
